@@ -1,0 +1,13 @@
+.userCard {
+  width: 550px;
+  display: grid;
+  grid-column-gap: 6px;
+  grid-template-columns: 1fr 1fr;
+  background-color: bisque;
+  padding: 20px 15px;
+}
+
+.title {
+  font-size: 25px;
+  color: black;
+}
