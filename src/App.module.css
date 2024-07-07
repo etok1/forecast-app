@@ -1,0 +1,13 @@
+.Body {
+  outline: none;
+  border: none;
+  font-family: "Rubik", sans-serif;
+  background-color: #082276;
+  height: 100vh;
+}
+
+.Container {
+  margin: 0 auto;
+  max-width: 1200px;
+  height: 100%;
+}

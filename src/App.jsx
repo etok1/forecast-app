@@ -1,17 +1,16 @@
+// import MyComponent from "./Components/data/Data.jsx";
 import React from "react";
-import User from "./Components/User/User.jsx";
+import Header from "./Components/header/Header.jsx";
+import style from "./App.module.css";
+import "./reset.css";
 
+// ,
 function App() {
-  const user = {
-    name: "Ivan",
-    secondName: "Petrov",
-    age: "25",
-    gender: "M",
-    rank: 3,
-  };
   return (
-    <div>
-      <User {...user} />
+    <div className={style.Body}>
+      <div className={style.Container}>
+        <Header />
+      </div>
     </div>
   );
 }

@@ -1,0 +1,52 @@
+:root {
+  --white: #ffffff;
+  --black: #000000;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.geolocation {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.geolocation p {
+  color: var(--white);
+}
+
+.inputContainer {
+  width: 30%;
+  display: flex;
+}
+
+.geolocation__icon {
+  cursor: pointer;
+}
+
+.inputContainer__input {
+  border: none;
+  outline: none;
+  border-radius: 20px;
+  width: 90%;
+  padding: 5px 15px;
+}
+.inputContainer__input::placeholder {
+  font-family: "Rubik", sans-serif;
+}
+
+.inputContainer__btn {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.7s ease-in;
+}
+
+.inputContainer__btn:hover {
+  transform: rotate(360deg);
+}
