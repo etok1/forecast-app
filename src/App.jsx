@@ -7,9 +7,12 @@ import "./reset.css";
 // ,
 function App() {
   return (
-    <div className={style.Body}>
-      <div className={style.Container}>
+    <div className={style.body}>
+      <div className={style.container}>
         <Header />
+        <main className={style.main}>
+          <div className={style.main__upperContainer}></div>
+        </main>
       </div>
     </div>
   );
