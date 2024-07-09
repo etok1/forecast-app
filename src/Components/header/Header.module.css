@@ -1,5 +1,5 @@
 :root {
-  --white: #ffffff;
+  --white: #f3f3f3;
   --black: #000000;
 }
 
@@ -18,6 +18,24 @@
 
 .geolocation p {
   color: var(--white);
+}
+
+.geolocation__icon {
+  transition: all 1s ease-in-out;
+}
+
+@keyframes jumping {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.geolocation__icon:hover {
+  animation: jumping 1s ease-in-out;
 }
 
 .inputContainer {

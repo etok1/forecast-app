@@ -1,0 +1,35 @@
+.main__upperContainer {
+  display: flex;
+  gap: 20px;
+}
+
+.main__weatherImage {
+  width: 300px;
+  height: 200px;
+}
+
+.main__temp {
+  font-size: 64px;
+}
+
+.main__tempWrapper {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.main__tempWrapper p {
+  font-size: 16px;
+}
+
+.details {
+  text-transform: uppercase;
+  padding: 15px 20px;
+  border-radius: 50px;
+  background: linear-gradient(#173785, #2a5298, #173785);
+  margin-top: 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
