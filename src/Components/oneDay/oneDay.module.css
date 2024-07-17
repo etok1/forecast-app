@@ -1,0 +1,25 @@
+.day {
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 25px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+}
+.typeWeather {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  gap: 2px;
+}
+
+.typeSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.typeWeather p {
+  font-size: 10px;
+}
