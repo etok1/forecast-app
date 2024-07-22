@@ -18,7 +18,7 @@ function Current({
   return (
     <section className={style.currentWeather}>
       <div className={style.main__upperContainer}>
-        <Icon icon={icon} width={"250px"} />
+        <img src={icon} alt={icon} width={"250px"} />
         <div className={style.main__tempWrapper}>
           <h1 className={style.main__temp}>{temp}°C</h1>
           <p>{weather}</p>

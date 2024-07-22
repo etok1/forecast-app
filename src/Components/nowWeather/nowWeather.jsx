@@ -10,22 +10,10 @@ import Current from "../current/current.jsx";
 //   return
 // }
 
-function fetchData(url) {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setData(data))
-      .catch((error) => console.log(error));
-  }, [url]);
-
-  return data;
-}
-
 function Weather() {
+  const [info, setInfo] = useState(null);
   const [search, setSearch] = useState("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState([null, null]);
   const [option, setOption] = useState("now");
 
   const handleSearch = (type) => {
@@ -36,48 +24,86 @@ function Weather() {
     setOption(option);
   };
 
-  // const apiFunction = async (latitude, longitude) => {
-  //   try {
-  //     const response = await axios.get(
-  //       `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`
-  //     );
+  const fetchData = (url) => {
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        setInfo(data);
+        console.log(data);
+      })
+      .catch((error) => console.log(error));
+  };
 
-  //     console.log(response.data);
-  //     setData(response.data);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const getCurrentLocation = () => {
+    handleSearch("current");
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation([latitude, longitude]);
+      });
+    } else {
+      console.error("Geolocation is not supported by this browser");
+    }
+  };
 
-  // const getCurrentLocation = () => {
-  //   handleSearch("current");
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition((position) => {
-  //       const { latitude, longitude } = position.coords;
-  //       setLocation({ latitude, longitude });
-  //       const data = fetchData(
-  //         `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`
-  //       );
-  //     });
-  //   } else {
-  //     console.error("Geolocation is not supported by this browser");
-  //   }
-  // };
+  // let url;
+  // const urlBase = "https://api.openweathermap.org/data/2.5";
 
-  const data = fetchData(
-    `http://api.openweathermap.org/data/2.5/forecast?lat=45&lon=65&appid=715dd38b56bede6d0444c207f4eed942`
-  );
+  // if (option === "now") {
+  //   url = new URL(
+  //     `/weather?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`,
+  //     urlBase
+  //   );
+  //   fetchData(url);
+  // } else if (option === "5days") {
+  //   url = new URL(
+  //     `/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`,
+  //     urlBase
+  //   );
+  //   fetchData(url);
+  // }
+
+  const currentWeather = (e) => {
+    if (search === "search") {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${e.target.value}&appid=715dd38b56bede6d0444c207f4eed942`;
+      fetchData(url);
+    } else if (search === "current") {
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
+      fetchData(url);
+    }
+  };
+
+  const daysWeather = (e) => {
+    if (search === "search") {
+      const url = `https://api.openweathermap.org/data/2.5/forecast?q=${e.target.value}&appid=715dd38b56bede6d0444c207f4eed942`;
+      fetchData(url);
+    } else if (search === "current") {
+      const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
+      fetchData(url);
+    }
+  };
+
+  const handleGetWeather = () => {
+    getCurrentLocation();
+  };
+
+  const convertingTemp = (temp) => {
+    const converted = temp - 273;
+    return converted.toFixed(2);
+  };
 
   return (
     <div>
       <div className={style.header}>
         {" "}
         <div className={style.geolocation}>
-          <h3>{location ? location : " "}</h3>
+          <h3>{info ? info.name : " "}</h3>
           <button
             className={`${style.btn} ${style.getLocation} `}
             onClick={() => {
-              getCurrentLocation();
+              handleGetWeather();
+              currentWeather();
+              daysWeather();
             }}
           >
             <img
@@ -135,34 +161,56 @@ function Weather() {
       <div className={style.weather}>
         {option === "now" && (
           <Current
-            icon="fluent:weather-fog-24-filled"
-            temp="19"
-            weather="Overcast clouds"
-            max="19"
-            min="16"
+            icon={
+              info
+                ? `http://openweathermap.org/img/wn/${info.list[0].weather[0].icon}.png`
+                : "loading..."
+            }
+            temp={info ? convertingTemp(info.list[0].main.temp) : " "}
+            weather={info ? info.list[0].weather[0].description : ""}
+            max={info ? convertingTemp(info.list[0].main.temp_max) : " "}
+            min={info ? convertingTemp(info.list[0].main.temp_min) : " "}
             up={
-              data.city.sunrise
-                ? new Date(data.city.sunrise * 1000).toLocaleTimeString()
+              info
+                ? new Date(info.list[0].sys.sunrise * 1000).toLocaleTimeString()
                 : " "
             }
-            down="19:21"
-            feel="19"
-            humidity="66"
-            wind="5"
-            pressure="1004"
+            down={
+              info
+                ? new Date(info.list[0].sys.sunset * 1000).toLocaleTimeString()
+                : " "
+            }
+            feel={info ? convertingTemp(info.list[0].main.feels_like) : " "}
+            humidity={info ? info.list[0].main.humidity : " "}
+            wind={info ? info.list[0].wind.speed : " "}
+            pressure={info ? info.list[0].main.pressure : " "}
           />
         )}
         {option === "5days" && (
           <section className={style.fiveDaysWeather}>
-            <div className={style.fiveDays}>
-              <Day
-                icon="fluent:weather-fog-24-filled"
-                date="14.05.25"
-                weather="overcast clouds"
-                minTemp="18"
-                maxTemp="20"
-              />
-            </div>
+            {info && (
+              <div className={style.fiveDays}>
+                {info.list.map((data, index) => {
+                  const key = data.weather[0].id;
+                  const date = new Date(data.dt * 1000).toLocaleDateString();
+                  const weather = data.weather.description;
+                  const icon = `http://openweathermap.org/img/wn/${data.weather[0].icon}.svg`;
+                  const minTemp = convertingTemp(data.main.temp_min);
+                  const maxTemp = convertingTemp(data.main.temp_max);
+                  return (
+                    <Day
+                      key={key}
+                      icon={icon}
+                      date={date}
+                      weather={weather}
+                      minTemp={minTemp}
+                      maxTemp={maxTemp}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
             <div className={style.hourly}>
               <Hour
                 icon="fluent:weather-fog-24-filled"
