@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import style from "./nowWeather.module.css";
 import geolocation from "./geol.svg";
-import axios from "axios";
+// import axios from "axios";
 import Day from "../oneDay/oneDay.jsx";
 import Hour from "../hour/hour.jsx";
 import Current from "../current/current.jsx";
@@ -10,8 +10,20 @@ import Current from "../current/current.jsx";
 //   return
 // }
 
+function fetchData(url) {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => setData(data))
+      .catch((error) => console.log(error));
+  }, [url]);
+
+  return data;
+}
+
 function Weather() {
-  const [data, setData] = useState({});
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [option, setOption] = useState("now");
@@ -24,28 +36,37 @@ function Weather() {
     setOption(option);
   };
 
-  const getCurrentLocation = async () => {
-    handleSearch("current");
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation({ latitude, longitude });
+  // const apiFunction = async (latitude, longitude) => {
+  //   try {
+  //     const response = await axios.get(
+  //       `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`
+  //     );
 
-        try {
-          const response = await axios.get(
-            `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`
-          );
+  //     console.log(response.data);
+  //     setData(response.data);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
-          console.log(response.data);
-          setData(response.data);
-        } catch (error) {
-          console.log(error);
-        }
-      });
-    } else {
-      console.error("Geolocation is not supported by this browser");
-    }
-  };
+  // const getCurrentLocation = () => {
+  //   handleSearch("current");
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition((position) => {
+  //       const { latitude, longitude } = position.coords;
+  //       setLocation({ latitude, longitude });
+  //       const data = fetchData(
+  //         `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`
+  //       );
+  //     });
+  //   } else {
+  //     console.error("Geolocation is not supported by this browser");
+  //   }
+  // };
+
+  const data = fetchData(
+    `http://api.openweathermap.org/data/2.5/forecast?lat=45&lon=65&appid=715dd38b56bede6d0444c207f4eed942`
+  );
 
   return (
     <div>
@@ -112,7 +133,7 @@ function Weather() {
       </div>
 
       <div className={style.weather}>
-        {data && option === "now" && (
+        {option === "now" && (
           <Current
             icon="fluent:weather-fog-24-filled"
             temp="19"
