@@ -1,37 +1,49 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import style from "./nowWeather.module.css";
 import geolocation from "./geol.svg";
 // import axios from "axios";
 import Day from "../oneDay/oneDay.jsx";
 import Hour from "../hour/hour.jsx";
 import Current from "../current/current.jsx";
-
-// function oneDay(props){
-//   return
-// }
+import axios from "axios";
 
 function Weather() {
   const [info, setInfo] = useState(null);
   const [search, setSearch] = useState("");
-  const [location, setLocation] = useState([null, null]);
+  const [location, setLocation] = useState(null);
   const [option, setOption] = useState("now");
+  const [url, setUrl] = useState("");
+  const [city, setCity] = useState("");
+  const urlBase = "https://api.openweathermap.org/data/2.5";
+  let link;
 
   const handleSearch = (type) => {
     setSearch(type);
   };
-
-  const handleView = (option) => {
-    setOption(option);
+  const fetchData = async (url) => {
+    try {
+      const response = await axios.get(url);
+      setInfo(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const fetchData = (url) => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setInfo(data);
-        console.log(data);
-      })
-      .catch((error) => console.log(error));
+  useEffect(() => {
+    const fetching = async () => {
+      if (url) {
+        await fetchData(url);
+        console.log(url);
+      } else {
+        alert("we need any location to provide you a forecast");
+      }
+    };
+    fetching();
+  }, [url]);
+
+  const convertingTemp = (temp) => {
+    const converted = temp - 273;
+    return converted.toFixed(2);
   };
 
   const getCurrentLocation = () => {
@@ -40,46 +52,12 @@ function Weather() {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
         setLocation([latitude, longitude]);
+
+        link = `${urlBase}/weather?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`;
+        setUrl(link);
       });
     } else {
       console.error("Geolocation is not supported by this browser");
-    }
-  };
-
-  // let url;
-  // const urlBase = "https://api.openweathermap.org/data/2.5";
-
-  // if (option === "now") {
-  //   url = new URL(
-  //     `/weather?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`,
-  //     urlBase
-  //   );
-  //   fetchData(url);
-  // } else if (option === "5days") {
-  //   url = new URL(
-  //     `/forecast?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`,
-  //     urlBase
-  //   );
-  //   fetchData(url);
-  // }
-
-  const currentWeather = (e) => {
-    if (search === "search") {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${e.target.value}&appid=715dd38b56bede6d0444c207f4eed942`;
-      fetchData(url);
-    } else if (search === "current") {
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
-      fetchData(url);
-    }
-  };
-
-  const daysWeather = (e) => {
-    if (search === "search") {
-      const url = `https://api.openweathermap.org/data/2.5/forecast?q=${e.target.value}&appid=715dd38b56bede6d0444c207f4eed942`;
-      fetchData(url);
-    } else if (search === "current") {
-      const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
-      fetchData(url);
     }
   };
 
@@ -87,9 +65,25 @@ function Weather() {
     getCurrentLocation();
   };
 
-  const convertingTemp = (temp) => {
-    const converted = temp - 273;
-    return converted.toFixed(2);
+  const handleView = (option) => {
+    setOption(option);
+    if (city) {
+      if (option === "now") {
+        link = `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`;
+        setUrl(link);
+      } else if (option === "5days") {
+        link = `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`;
+        setUrl(link);
+      }
+    } else if (location[0] && location[1]) {
+      if (option === "now") {
+        link = `${urlBase}/weather?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
+        setUrl(link);
+      } else if (option === "5days") {
+        link = `${urlBase}/forecast?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
+        setUrl(link);
+      }
+    }
   };
 
   return (
@@ -102,8 +96,6 @@ function Weather() {
             className={`${style.btn} ${style.getLocation} `}
             onClick={() => {
               handleGetWeather();
-              currentWeather();
-              daysWeather();
             }}
           >
             <img
@@ -130,8 +122,18 @@ function Weather() {
           />
           <button
             className={`${style.btn} ${style.searching} `}
-            onClick={() => {
+            onClick={(e) => {
               handleSearch("search");
+              setCity(e.target.value);
+              if (option === "now") {
+                setUrl(
+                  `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`
+                );
+              } else if (option === "5days") {
+                setUrl(
+                  `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`
+                );
+              }
             }}
           >
             Search
@@ -143,7 +145,10 @@ function Weather() {
           className={`${style.switcherBtn} ${
             option === "5days" ? style.offBtn : ""
           }`}
-          onClick={() => handleView("now")}
+          onClick={() => {
+            handleView("now");
+            console.log("changed to now");
+          }}
         >
           <p>Now</p>
         </button>
@@ -152,7 +157,10 @@ function Weather() {
           className={`${style.switcherBtn}  ${
             option === "now" ? style.offBtn : ""
           }`}
-          onClick={() => handleView("5days")}
+          onClick={() => {
+            handleView("5days");
+            console.log("changed to 5 days");
+          }}
         >
           <p>5 days</p>
         </button>
@@ -163,43 +171,42 @@ function Weather() {
           <Current
             icon={
               info
-                ? `http://openweathermap.org/img/wn/${info.list[0].weather[0].icon}.png`
+                ? `http://openweathermap.org/img/wn/${info.weather[0].icon}.png`
                 : "loading..."
             }
-            temp={info ? convertingTemp(info.list[0].main.temp) : " "}
-            weather={info ? info.list[0].weather[0].description : ""}
-            max={info ? convertingTemp(info.list[0].main.temp_max) : " "}
-            min={info ? convertingTemp(info.list[0].main.temp_min) : " "}
+            temp={info ? convertingTemp(info.main.temp) : " "}
+            weather={info ? info.weather[0].description : ""}
+            max={info ? convertingTemp(info.main.temp_max) : " "}
+            min={info ? convertingTemp(info.main.temp_min) : " "}
             up={
               info
-                ? new Date(info.list[0].sys.sunrise * 1000).toLocaleTimeString()
+                ? new Date(info.sys.sunrise * 1000).toLocaleTimeString()
                 : " "
             }
             down={
-              info
-                ? new Date(info.list[0].sys.sunset * 1000).toLocaleTimeString()
-                : " "
+              info ? new Date(info.sys.sunset * 1000).toLocaleTimeString() : " "
             }
-            feel={info ? convertingTemp(info.list[0].main.feels_like) : " "}
-            humidity={info ? info.list[0].main.humidity : " "}
-            wind={info ? info.list[0].wind.speed : " "}
-            pressure={info ? info.list[0].main.pressure : " "}
+            feel={info ? convertingTemp(info.main.feels_like) : " "}
+            humidity={info ? info.main.humidity : " "}
+            wind={info ? info.wind.speed : " "}
+            pressure={info ? info.main.pressure : " "}
           />
         )}
         {option === "5days" && (
           <section className={style.fiveDaysWeather}>
-            {info && (
+            {info.list && (
               <div className={style.fiveDays}>
-                {info.list.map((data, index) => {
-                  const key = data.weather[0].id;
-                  const date = new Date(data.dt * 1000).toLocaleDateString();
-                  const weather = data.weather.description;
-                  const icon = `http://openweathermap.org/img/wn/${data.weather[0].icon}.svg`;
-                  const minTemp = convertingTemp(data.main.temp_min);
-                  const maxTemp = convertingTemp(data.main.temp_max);
+                {info.list.map((forecast) => {
+                  const date = new Date(
+                    forecast.dt * 1000
+                  ).toLocaleDateString();
+                  const weather = forecast.weather[0].description;
+                  const icon = `http://openweathermap.org/img/wn/${forecast.weather[0].icon}.png`;
+                  const minTemp = convertingTemp(forecast.main.temp_min);
+                  const maxTemp = convertingTemp(forecast.main.temp_max);
+
                   return (
                     <Day
-                      key={key}
                       icon={icon}
                       date={date}
                       weather={weather}
