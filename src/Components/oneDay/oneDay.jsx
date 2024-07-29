@@ -2,9 +2,9 @@ import React from "react";
 import style from "./oneDay.module.css";
 import { Icon } from "@iconify/react";
 
-function Day({ icon, date, weather, minTemp, maxTemp }) {
+function Day({ key, icon, date, weather, minTemp, maxTemp }) {
   return (
-    <div className={style.day}>
+    <div key={key} className={style.day}>
       <div className={style.typeSection}>
         <Icon icon={icon} width={"25px"} />
         <div className={style.typeWeather}>

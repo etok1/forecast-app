@@ -30,15 +30,12 @@ function Weather() {
   };
 
   useEffect(() => {
-    const fetching = async () => {
-      if (url) {
-        await fetchData(url);
-        console.log(url);
-      } else {
-        alert("we need any location to provide you a forecast");
-      }
-    };
-    fetching();
+    if (url) {
+      fetchData(url);
+      console.log(url);
+    } else {
+      alert("we need any location to provide you a forecast");
+    }
   }, [url]);
 
   const convertingTemp = (temp) => {
@@ -72,7 +69,7 @@ function Weather() {
         link = `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`;
         setUrl(link);
       } else if (option === "5days") {
-        link = `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/forecast?q=${city}&cnt=2&appid=715dd38b56bede6d0444c207f4eed942`;
         setUrl(link);
       }
     } else if (location[0] && location[1]) {
@@ -80,7 +77,7 @@ function Weather() {
         link = `${urlBase}/weather?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
         setUrl(link);
       } else if (option === "5days") {
-        link = `${urlBase}/forecast?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/forecast?lat=${location[0]}&lon=${location[1]}&cnt=2&appid=715dd38b56bede6d0444c207f4eed942`;
         setUrl(link);
       }
     }
@@ -115,7 +112,11 @@ function Weather() {
         </div>
         <div className={style.inputContainer}>
           <input
-            onChange={(event) => setLocation(event.target.value)}
+            onChange={(event) => {
+              console.log(event.target.value);
+              setCity(event.target.value);
+              setLocation(event.target.value);
+            }}
             className={style.inputContainer__input}
             type="text"
             placeholder="Location"
@@ -124,7 +125,7 @@ function Weather() {
             className={`${style.btn} ${style.searching} `}
             onClick={(e) => {
               handleSearch("search");
-              setCity(e.target.value);
+
               if (option === "now") {
                 setUrl(
                   `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`
@@ -196,7 +197,7 @@ function Weather() {
           <section className={style.fiveDaysWeather}>
             {info.list && (
               <div className={style.fiveDays}>
-                {info.list.map((forecast) => {
+                {info.list.map((forecast, index) => {
                   const date = new Date(
                     forecast.dt * 1000
                   ).toLocaleDateString();
@@ -207,6 +208,7 @@ function Weather() {
 
                   return (
                     <Day
+                      key={index}
                       icon={icon}
                       date={date}
                       weather={weather}
