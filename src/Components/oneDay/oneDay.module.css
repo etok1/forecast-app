@@ -1,12 +1,13 @@
 .day {
-  width: 100%;
-  padding: 10px 20px;
+  width: 20%;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-radius: 25px;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
 }
+
 .typeWeather {
   display: flex;
   flex-direction: column;
@@ -18,8 +19,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding-right: 30px;
+  border-right: 2px solid rgb(212, 212, 212);
 }
 
 .typeWeather p {
+  color: rgb(212, 212, 212);
+  margin-top: 5px;
   font-size: 10px;
+}
+
+.daysTemp p {
+  font-size: 14px;
 }

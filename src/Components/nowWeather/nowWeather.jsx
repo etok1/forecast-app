@@ -1,30 +1,57 @@
 import React, { useEffect, useState } from "react";
 import style from "./nowWeather.module.css";
 import geolocation from "./geol.svg";
-// import axios from "axios";
 import Day from "../oneDay/oneDay.jsx";
-import Hour from "../hour/hour.jsx";
 import Current from "../current/current.jsx";
+import Error from "../error/error.jsx";
 import axios from "axios";
 
 function Weather() {
   const [info, setInfo] = useState(null);
   const [search, setSearch] = useState("");
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState([]);
   const [option, setOption] = useState("now");
   const [url, setUrl] = useState("");
   const [city, setCity] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [error, setError] = useState(true);
+
   const urlBase = "https://api.openweathermap.org/data/2.5";
   let link;
+  const uniqueDates = new Set();
 
   const handleSearch = (type) => {
     setSearch(type);
   };
+
+  const handleButtonClick = () => {
+    if (!city) {
+      setError(true);
+      return;
+    }
+
+    handleSearch("search");
+
+    if (option === "now") {
+      setUrl(
+        `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`
+      );
+    } else if (option === "5days") {
+      setUrl(
+        `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`
+      );
+    }
+
+    setError(false);
+  };
+
   const fetchData = async (url) => {
     try {
       const response = await axios.get(url);
       setInfo(response.data);
+      setError(false);
     } catch (error) {
+      setError(true);
       console.log(error);
     }
   };
@@ -33,15 +60,8 @@ function Weather() {
     if (url) {
       fetchData(url);
       console.log(url);
-    } else {
-      alert("we need any location to provide you a forecast");
     }
   }, [url]);
-
-  const convertingTemp = (temp) => {
-    const converted = temp - 273;
-    return converted.toFixed(2);
-  };
 
   const getCurrentLocation = () => {
     handleSearch("current");
@@ -50,10 +70,11 @@ function Weather() {
         const { latitude, longitude } = position.coords;
         setLocation([latitude, longitude]);
 
-        link = `${urlBase}/weather?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/weather?lat=${latitude}&lon=${longitude}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`;
         setUrl(link);
       });
     } else {
+      setError(true);
       console.error("Geolocation is not supported by this browser");
     }
   };
@@ -64,20 +85,20 @@ function Weather() {
 
   const handleView = (option) => {
     setOption(option);
-    if (city) {
+    if (search === "search") {
       if (option === "now") {
-        link = `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`;
         setUrl(link);
       } else if (option === "5days") {
-        link = `${urlBase}/forecast?q=${city}&cnt=2&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`;
         setUrl(link);
       }
-    } else if (location[0] && location[1]) {
+    } else if (search === "current") {
       if (option === "now") {
-        link = `${urlBase}/weather?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/weather?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`;
         setUrl(link);
       } else if (option === "5days") {
-        link = `${urlBase}/forecast?lat=${location[0]}&lon=${location[1]}&cnt=2&appid=715dd38b56bede6d0444c207f4eed942`;
+        link = `${urlBase}/forecast?lat=${location[0]}&lon=${location[1]}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`;
         setUrl(link);
       }
     }
@@ -88,7 +109,11 @@ function Weather() {
       <div className={style.header}>
         {" "}
         <div className={style.geolocation}>
-          <h3>{info ? info.name : " "}</h3>
+          <h3>
+            {info || inputValue
+              ? info.name || info.city.name || inputValue
+              : " "}
+          </h3>
           <button
             className={`${style.btn} ${style.getLocation} `}
             onClick={() => {
@@ -116,25 +141,28 @@ function Weather() {
               console.log(event.target.value);
               setCity(event.target.value);
               setLocation(event.target.value);
+              setInputValue(event.target.value);
             }}
+            value={inputValue}
             className={style.inputContainer__input}
             type="text"
             placeholder="Location"
           />
           <button
             className={`${style.btn} ${style.searching} `}
-            onClick={(e) => {
-              handleSearch("search");
-
+            onClick={(event) => {
+              handleButtonClick();
+              event.preventDefault();
               if (option === "now") {
                 setUrl(
-                  `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`
+                  `${urlBase}/weather?q=${city}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`
                 );
               } else if (option === "5days") {
                 setUrl(
-                  `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942`
+                  `${urlBase}/forecast?q=${city}&appid=715dd38b56bede6d0444c207f4eed942&units=metric`
                 );
               }
+              setInputValue(" ");
             }}
           >
             Search
@@ -168,66 +196,119 @@ function Weather() {
       </div>
 
       <div className={style.weather}>
-        {option === "now" && (
-          <Current
-            icon={
-              info
-                ? `http://openweathermap.org/img/wn/${info.weather[0].icon}.png`
-                : "loading..."
-            }
-            temp={info ? convertingTemp(info.main.temp) : " "}
-            weather={info ? info.weather[0].description : ""}
-            max={info ? convertingTemp(info.main.temp_max) : " "}
-            min={info ? convertingTemp(info.main.temp_min) : " "}
-            up={
-              info
-                ? new Date(info.sys.sunrise * 1000).toLocaleTimeString()
-                : " "
-            }
-            down={
-              info ? new Date(info.sys.sunset * 1000).toLocaleTimeString() : " "
-            }
-            feel={info ? convertingTemp(info.main.feels_like) : " "}
-            humidity={info ? info.main.humidity : " "}
-            wind={info ? info.wind.speed : " "}
-            pressure={info ? info.main.pressure : " "}
-          />
-        )}
-        {option === "5days" && (
-          <section className={style.fiveDaysWeather}>
-            {info.list && (
-              <div className={style.fiveDays}>
-                {info.list.map((forecast, index) => {
-                  const date = new Date(
-                    forecast.dt * 1000
-                  ).toLocaleDateString();
-                  const weather = forecast.weather[0].description;
-                  const icon = `http://openweathermap.org/img/wn/${forecast.weather[0].icon}.png`;
-                  const minTemp = convertingTemp(forecast.main.temp_min);
-                  const maxTemp = convertingTemp(forecast.main.temp_max);
-
-                  return (
-                    <Day
-                      key={index}
-                      icon={icon}
-                      date={date}
-                      weather={weather}
-                      minTemp={minTemp}
-                      maxTemp={maxTemp}
-                    />
-                  );
-                })}
-              </div>
-            )}
-
-            <div className={style.hourly}>
-              <Hour
-                icon="fluent:weather-fog-24-filled"
-                temp="22"
-                time="15:00"
+        {error ? (
+          <Error />
+        ) : (
+          <>
+            {option === "now" && info && (
+              <Current
+                icon={
+                  info &&
+                  info.weather &&
+                  info.weather[0] &&
+                  info.weather[0].icon
+                    ? `http://openweathermap.org/img/wn/${info.weather[0].icon}.png`
+                    : "loading..."
+                }
+                temp={
+                  info && info.main && info.main.temp
+                    ? Math.round(info.main.temp)
+                    : "..."
+                }
+                weather={
+                  info &&
+                  info.weather &&
+                  info.weather[0] &&
+                  info.weather[0].description
+                    ? info.weather[0].description
+                    : "..."
+                }
+                max={
+                  info && info.main && info.main.temp_max
+                    ? Math.round(info.main.temp_max)
+                    : "..."
+                }
+                min={
+                  info && info.main && info.main.temp_min
+                    ? Math.round(info.main.temp_min)
+                    : " "
+                }
+                up={
+                  info && info.sys && info.sys.sunrise
+                    ? new Date(info.sys.sunrise * 1000).toLocaleTimeString()
+                    : "..."
+                }
+                down={
+                  info && info.sys && info.sys.sunset
+                    ? new Date(info.sys.sunset * 1000).toLocaleTimeString()
+                    : "..."
+                }
+                feel={
+                  info && info.main && info.sys.feels_like
+                    ? Math.round(info.main.feels_like)
+                    : "..."
+                }
+                humidity={
+                  info && info.main && info.main.humidity
+                    ? info.main.humidity
+                    : "..."
+                }
+                wind={
+                  info && info.wind && info.wind.speed ? info.wind.speed : "..."
+                }
+                pressure={
+                  info && info.main && info.main.pressure
+                    ? info.main.pressure
+                    : "..."
+                }
               />
-            </div>
-          </section>
+            )}
+          </>
+        )}
+        {error ? (
+          <Error />
+        ) : (
+          <>
+            {option === "5days" && info && info.list && (
+              <section className={style.fiveDaysWeather}>
+                {info.list && (
+                  <div className={style.fiveDays}>
+                    {info.list
+                      .filter((forecast) => {
+                        const date = new Date(
+                          forecast.dt * 1000
+                        ).toLocaleDateString();
+                        if (!uniqueDates.has(date)) {
+                          uniqueDates.add(date);
+                          return true;
+                        }
+                        return false;
+                      })
+                      .map((forecast, index) => {
+                        const date = new Date(
+                          forecast.dt * 1000
+                        ).toLocaleDateString();
+                        const weather = forecast.weather[0].description;
+                        const icon = `http://openweathermap.org/img/wn/${forecast.weather[0].icon}.png`;
+                        const minTemp = Math.round(forecast.main.temp_min);
+                        const maxTemp = Math.round(forecast.main.temp_max);
+
+                        return (
+                          <Day
+                            key={index}
+                            icon={icon}
+                            date={date}
+                            weather={weather}
+                            minTemp={minTemp}
+                            maxTemp={maxTemp}
+                          />
+                        );
+                      })}
+                  </div>
+                )}
+              </section>
+            )}
+          </>
         )}
       </div>
     </div>
