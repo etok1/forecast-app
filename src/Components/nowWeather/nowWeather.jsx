@@ -110,9 +110,9 @@ function Weather() {
         {" "}
         <div className={style.geolocation}>
           <h3>
-            {info || inputValue
-              ? info.name || info.city.name || inputValue
-              : " "}
+            {info
+              ? info.name || (info.city && info.city.name) || inputValue
+              : ""}
           </h3>
           <button
             className={`${style.btn} ${style.getLocation} `}
